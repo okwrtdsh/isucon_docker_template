@@ -1,0 +1,70 @@
+version: '3.8'
+services:
+  db:
+    image: 127.0.0.1:5000/db
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+       condition: on-failure
+      update_config:
+        order: stop-first
+      placement:
+        constraints:
+          - node.hostname == instance1
+    hostname: db
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: example
+      MYSQL_USER: example
+      MYSQL_PASSWORD: example
+      MYSQL_PASSWORD: example
+    volumes:
+      - db_data:/var/lib/mysql
+      - db_logs:/var/log/mysql
+  app:
+    image: 127.0.0.1:5000/app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+       condition: on-failure
+      update_config:
+        order: stop-first
+      placement:
+        constraints:
+          - node.hostname == instance1
+    hostname: app
+    ports:
+      - 8000:80
+  nginx:
+    image: 127.0.0.1:5000/nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+       condition: on-failure
+      update_config:
+        order: stop-first
+      placement:
+        constraints:
+          - node.hostname == instance1
+    hostname: nginx
+    ports:
+      - 80:80
+volumes:
+  db_data:
+    external: true
+  db_logs:
+    external: true
